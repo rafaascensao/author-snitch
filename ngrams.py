@@ -1,5 +1,7 @@
 import sys
 
+# not tested, and somethings may be missing
+
 def bigrams(file):
    bigramsCount = {"<s>" : {}}
    with open(file, 'r') as i:
