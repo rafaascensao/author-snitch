@@ -1,5 +1,6 @@
 import sys
 import json
+import pickle
 
 # not tested, and somethings may be missing
 
@@ -32,9 +33,9 @@ def bigrams(phr):
    	for k in bigramsCount[key].keys():
    		filebgram.write(key + ' ' + k + ' ' + str(bigramsCount[key][k]) + str( '\n'))
 			
-   jsonDict = "bgrams-json" + inFile
-   with open(jsonDict, 'w') as f:
-	json.dump(bigramsCount,f)
+   jsonDict = "bgrams-json" + inFile + ".pkl"
+   with open(jsonDict, 'wb') as f:
+	pickle.dump(bigramsCount,f, pickle.HIGHEST_PROTOCOL)
    
    return bigramsCount
 
@@ -55,9 +56,9 @@ def unigrams(phr):
    for key in unigramsCount.keys():
 	fileunigram.write(key + ' ' + str(unigramsCount[key]) + '\n') 
 	
-   jsonDict = "unigrams-json" + inFile
-   with open(jsonDict, 'w') as f:
-	json.dump(unigramsCount,f)
+   jsonDict = "unigrams-json" + inFile + ".pkl"
+   with open(jsonDict, 'wb') as f:
+	pickle.dump(unigramsCount,f, pickle.HIGHEST_PROTOCOL)
 
    return unigramsCount 
 
