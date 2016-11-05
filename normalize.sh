@@ -6,4 +6,4 @@ if [ -z "$1" ]
 		echo "Input file not provided"
 		exit
 fi 
-sed -e 's/\([[:punct:]]\)\([[:punct:]]\)/\1 \2/g' -e 's/[[:punct:]] / &/g' -e 's/ [[:punct:]]/& /g' -e 's/  / /g' "$1" 
+sed -e 's/\([[:punct:]]\)\([[:punct:]]\)/\1 \2/g' -e 's/[[:punct:]] / &/g' -e 's/ [[:punct:]]/& /g' -e 's/^[[:punct:]]/& /g' -e 's/[[:punct:]]$/ &/g' -e 's/  / /g' "$1" 
