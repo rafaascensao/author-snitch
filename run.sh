@@ -26,6 +26,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
 done < target/filenames.txt
 echo "${authors[@]}"
 for a in "${authors[@]}"; do
+	echo "$a"
 	cd target/
 	cat corpora/treino/"$a"/* > "$a".txt
 	python ../ngrams.py -d "$a".txt

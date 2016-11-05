@@ -33,10 +33,6 @@ def bigrams(phr):
    	for k in bigramsCount[key].keys():
    		filebgram.write(key + ' ' + k + ' ' + str(bigramsCount[key][k]) + str( '\n'))
 			
-   jsonDict = "bgrams-json" + inFile + ".pkl"
-   with open(jsonDict, 'wb') as f:
-	pickle.dump(bigramsCount,f, pickle.HIGHEST_PROTOCOL)
-   
    return bigramsCount
 
 
@@ -56,11 +52,10 @@ def unigrams(phr):
    for key in unigramsCount.keys():
 	fileunigram.write(key + ' ' + str(unigramsCount[key]) + '\n') 
 	
-   jsonDict = "unigrams-json" + inFile + ".pkl"
-   with open(jsonDict, 'wb') as f:
-	pickle.dump(unigramsCount,f, pickle.HIGHEST_PROTOCOL)
-
    return unigramsCount 
+
+#def loadUnigrams(author):
+#	with open( 
 
 def splitPhrases(file):
    phrases = []
