@@ -1,4 +1,5 @@
 import sys
+import json
 
 # not tested, and somethings may be missing
 
@@ -32,6 +33,9 @@ def bigrams(phr):
    		filebgram.write(key + ' ' + k + ' ' + str(bigramsCount[key][k]) + str( '\n'))
 			
    print bigramsCount
+   with open('bigrams_dict', 'w') as f:
+	json.dump(bigramsCount,f)
+   
    return bigramsCount
 
 
@@ -76,7 +80,6 @@ def laplace(phr):
 	bigramsCount = bigrams(p)
 	
 	difwords = len(unigramsCount)
-
 
 #option = sys.argv[1]
 inFile = sys.argv[1]
