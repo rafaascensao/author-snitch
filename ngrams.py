@@ -32,8 +32,8 @@ def bigrams(phr):
    	for k in bigramsCount[key].keys():
    		filebgram.write(key + ' ' + k + ' ' + str(bigramsCount[key][k]) + str( '\n'))
 			
-   print bigramsCount
-   with open('bigrams_dict', 'w') as f:
+   jsonDict = "bgrams-json" + inFile
+   with open(jsonDict, 'w') as f:
 	json.dump(bigramsCount,f)
    
    return bigramsCount
@@ -55,7 +55,10 @@ def unigrams(phr):
    for key in unigramsCount.keys():
 	fileunigram.write(key + ' ' + str(unigramsCount[key]) + '\n') 
 	
-   print unigramsCount
+   jsonDict = "unigrams-json" + inFile
+   with open(jsonDict, 'w') as f:
+	json.dump(unigramsCount,f)
+
    return unigramsCount 
 
 def splitPhrases(file):
@@ -72,7 +75,6 @@ def splitPhrases(file):
 		phrase = ""
            else:
  		phrase = phrase + word + " " 
-   print phrases
    return phrases
    
 def laplace(phr):
@@ -81,15 +83,12 @@ def laplace(phr):
 	
 	difwords = len(unigramsCount)
 
-#option = sys.argv[1]
-inFile = sys.argv[1]
-print inFile
-p = splitPhrases(inFile)
-bigrams(p)
-unigrams(p)
-laplace(p)
-#if option == "uni":
-#   unigrams(inFile)
-
-#elif option == "bi":
-#   bigrams(inFile)
+flag = sys.argv[1]
+inFile = sys.argv[2]
+if flag == '-d':
+	p = splitPhrases(inFile)
+	bigrams(p)
+	unigrams(p)
+elif flag == '-t':	
+	#calculate prob of file
+	laplace(inFile)
