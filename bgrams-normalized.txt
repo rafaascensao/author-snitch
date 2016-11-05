@@ -1,19 +1,21 @@
-! 2
-ola 1
-pedro 1
-e 1
-<s> 3
-</s> 3
-de 2
-, 1
-o 1
-. 1
-curto 1
-chichi 1
-fazer 1
-sou 1
-a 1
-eu 2
-bola 1
-jogar 1
-bue 1
+jogar a 1
+ola eu 1
+pedro . 1
+e de 1
+! </s> 1
+<s> eu 1
+<s> ola 1
+de jogar 1
+de fazer 1
+, e 1
+o pedro 1
+. </s> 1
+curto bue 1
+chichi ! 1
+fazer chichi 1
+sou o 1
+a bola 1
+eu curto 1
+eu sou 1
+bola , 1
+bue de 1

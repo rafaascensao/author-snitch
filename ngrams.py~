@@ -32,7 +32,6 @@ def bigrams(phr):
    		filebgram.write(key + ' ' + k + ' ' + str(bigramsCount[key][k]) + str( '\n'))
 			
    print bigramsCount
-   return bigramsCount
 
 
 def unigrams(phr):
@@ -51,8 +50,7 @@ def unigrams(phr):
    for key in unigramsCount.keys():
 	fileunigram.write(key + ' ' + str(unigramsCount[key]) + '\n') 
 	
-   print unigramsCount
-   return unigramsCount 
+   print unigramsCount 
 
 def splitPhrases(file):
    phrases = []
@@ -70,12 +68,6 @@ def splitPhrases(file):
  		phrase = phrase + word + " " 
    print phrases
    return phrases
-   
-def laplace(phr):
-	unigramsCount = unigrams(p)
-	bigramsCount = bigrams(p)
-	
-	difwords = len(unigramsCount)
 
 
 #option = sys.argv[1]
@@ -84,7 +76,6 @@ print inFile
 p = splitPhrases(inFile)
 bigrams(p)
 unigrams(p)
-laplace(p)
 #if option == "uni":
 #   unigrams(inFile)
 
