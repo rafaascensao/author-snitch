@@ -1,5 +1,6 @@
 import sys
 import os
+import pickle
 
 # not tested, and somethings may be missing
 
@@ -102,15 +103,14 @@ def getUniqueWords(unigrams):
 		counter = counter + 1
 	return counter - 2
 		
-def probUni(phr):
-    authorsList = getAuthors()
+def probUni(phr, authorsList, unigramsAuthors):
     probs = {}
 
     for a in authorsList:
 	probs[a] = 0
 
     for f in phr:
-	p = prob_phr_uni(f)
+	p = prob_phr_uni(f, authorsList, unigramsAuthors)
 	for author in probs:
 		probs[author] = probs[author] + p[author]
       
@@ -124,17 +124,16 @@ def probUni(phr):
     print chosenOne
     return chosenOne 
    
-def probBi(phr):
-    authorsList = getAuthors()
+def probBi(phr, authorsList, unigramsAuthors, bigramsAuthors):
     probs = {}
 
     for a in authorsList:
 	probs[a] = 0
 
     for f in phr:
-	p = prob_phr_bi(f)
+	p = prob_phr_bi(f, authorsList, unigramsAuthors, bigramsAuthors)
 	for author in probs:
-		probs[author] = ( probs[author] + p[author] ) * getUniqueWords(loadUnigrams(author))
+		probs[author] = probs[author] + p[author] 
       
     maximum = -sys.maxint - 1
     chosenOne = ""
@@ -146,16 +145,16 @@ def probBi(phr):
     print chosenOne
     return chosenOne 
 
-def prob_phr_uni(frase):
+def prob_phr_uni(frase, authorsList, unigramsAuthor):
     words = frase.split()
-    authorsList = getAuthors()
     probs = {};
     for a in authorsList:
-        unigramsCount = loadUnigrams(a)
+        unigramsCount = unigramsAuthor[a]
         probabilidade = 1;
+	count = getNumWords(unigramsCount)
         for w in words:
 	    if w in unigramsCount:
-            	value = float(unigramsCount[w])/float(getNumWords(unigramsCount))
+            	value = float(unigramsCount[w])/float(count)
 	    else:
 		value = 0
             probabilidade = probabilidade * value
@@ -163,31 +162,71 @@ def prob_phr_uni(frase):
     return probs
  
  
-def prob_phr_bi(frase):
+def prob_phr_bi(frase, authorsList, unigramsAuthors, bigramsAuthors):
     words = frase.split()
-    authorsList = getAuthors()
     probs = {};
     for a in authorsList:
-        bgramsCount = loadBigrams(a)
-	unigramsCount = loadUnigrams(a)
+        bgramsCount = bigramsAuthors[a]
+	unigramsCount = unigramsAuthors[a]
         probabilidade = 1;
-        count = 0
-        for w in words:
-	    if w == words[len(words)-1]:
-		break
-	    if w in bgramsCount:
-		if words[count+1] in bgramsCount[w]:
-            		value = (float(bgramsCount[w][words[count+1]]) + 1)/float(unigramsCount[w] + getUniqueWords(unigramsCount))
-		else:
-			value = float(1) /float(unigramsCount[w] + getUniqueWords(unigramsCount))
-	    else:
-		value = float(1) /float(getUniqueWords(unigramsCount))
-            probabilidade = probabilidade * value
-            count=count+1
+	count = getUniqueWords(unigramsCount)
+	value = calculateProbBi(words, bgramsCount, unigramsCount, "meter-aqui-o-metodo-que-se-quer-de-alisamento", count)
         probs[a] = probabilidade
     return probs
    
+def calculateProbBi(words, bigramsCount, unigramsCount, flag, count):
+        previousWord = "<s>" 
+        for w in words:
+	    if previousWord in bgramsCount:
+		if w in bgramsCount[previousWord]:
+            		value = (float(bgramsCount[previousWord][w]) + 1)/float(unigramsCount[previousWord] + count)
+		else:
+			value = float(1) /float(unigramsCount[previousWord] + count)
+	    else:
+		value = float(1) /float(count)
+
+            probabilidade = probabilidade * value
+	    previousWord = w
+	return value
+		
+def guardamedia(p):
    
+    filename=str(inFile)+'-list.txt'
+    f = open(filename, 'w')
+    pickle.dump(p, f)
+   
+def media(p):
+    num_f = len(p)
+    num_w = 0
+    for f in p:
+        words = f.split()
+        num_w = num_w + len(words)
+       
+    media = float(num_w)/float(num_f)
+   
+    return media
+
+def prob_frase(p):
+    authorsList=getAuthors()
+    probs = {}
+    chosenOne = ' '
+    maximum = sys.maxint - 1
+    dif = 0
+    for a in authorsList:
+    	filename= 'target/' + a + '.txt-list.txt'
+        f = open(filename, 'r')
+    	probs[a] = media(pickle.load(f))
+    print '#############################'  
+    print 'media:' + str(media(p)) +'\n'   
+    for a in authorsList:
+        print a + '  ' + str(probs[a]) + '\n'
+       
+        if abs(media(p) - probs[a]) < maximum:
+            maximum = abs(media(p) - probs[a])
+            chosenOne = a
+    print chosenOne + '\n'
+    print '#############################'
+    return chosenOne
    
 def getAuthors():
     authorsList = []
@@ -195,19 +234,28 @@ def getAuthors():
         for dirs in subdirs[1]:
             authorsList.append(dirs)
     return authorsList
+
 flag = sys.argv[1]
 inFile = sys.argv[2]
 if flag == '-d':
 	p = splitPhrases(inFile)
 	bigrams(p)
 	unigrams(p)
+	guardamedia(p)
 elif flag == '-t':	
-	probBi(splitPhrases("normalized-text1.txt"))
-	probBi(splitPhrases("normalized-text2.txt"))
-	probBi(splitPhrases("normalized-text3.txt"))
-	probBi(splitPhrases("normalized-text4.txt"))
-	probBi(splitPhrases("normalized-text5.txt"))
-	probBi(splitPhrases("normalized-text6.txt"))
+	authorsList = getAuthors()
+	authorsBigrams = {}
+	authorsUnigrams = {}
+	for author in authorsList:
+		authorsBigrams[author] = loadBigrams(author)
+		authorsUnigrams[author] = loadUnigrams(author)
+
+	prob_frase(splitPhrases("normalized-text1.txt"))
+	prob_frase(splitPhrases("normalized-text2.txt"))
+	prob_frase(splitPhrases("normalized-text3.txt"))
+	prob_frase(splitPhrases("normalized-text4.txt"))
+	prob_frase(splitPhrases("normalized-text5.txt"))
+	prob_frase(splitPhrases("normalized-text6.txt"))
 
 
 
