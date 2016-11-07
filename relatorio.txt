@@ -1,6 +1,7 @@
 Relatorio MP2
  
 Pedro Ascensao 78961, Joao Rebelo 75376
+Grupo 31
  
 O objectivo do projecto é extrair conhecimento de um corpus de textos de vários escritores, tal que, com esse conhecimento, seja possível identificar o autor de outro texto. A nossa solucao para este problema é composta essencialmente por dois scripts, o ficheiro run.sh e o ficheiro ngrams.py.
   
