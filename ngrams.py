@@ -110,7 +110,7 @@ def probUni(phr, authorsList, unigramsAuthors):
 	probs[a] = 0
 
     for f in phr:
-	p = prob_phr_uni(f, authorsList, unigramsAuthors)
+	p = phraseUnigram(f, authorsList, unigramsAuthors)
 	for author in probs:
 		probs[author] = probs[author] + p[author]
       
@@ -131,7 +131,7 @@ def probBi(phr, authorsList, unigramsAuthors, bigramsAuthors):
 	probs[a] = 0
 
     for f in phr:
-	p = prob_phr_bi(f, authorsList, unigramsAuthors, bigramsAuthors)
+	p = phraseBigram(f, authorsList, unigramsAuthors, bigramsAuthors)
 	for author in probs:
 		probs[author] = probs[author] + p[author] 
       
@@ -145,7 +145,7 @@ def probBi(phr, authorsList, unigramsAuthors, bigramsAuthors):
     print chosenOne
     return chosenOne 
 
-def prob_phr_uni(frase, authorsList, unigramsAuthor):
+def phraseUnigram(frase, authorsList, unigramsAuthor):
     words = frase.split()
     probs = {};
     for a in authorsList:
@@ -162,7 +162,7 @@ def prob_phr_uni(frase, authorsList, unigramsAuthor):
     return probs
  
  
-def prob_phr_bi(frase, authorsList, unigramsAuthors, bigramsAuthors):
+def phraseBigram(frase, authorsList, unigramsAuthors, bigramsAuthors):
     words = frase.split()
     probs = {};
     for a in authorsList:
@@ -170,11 +170,11 @@ def prob_phr_bi(frase, authorsList, unigramsAuthors, bigramsAuthors):
 	unigramsCount = unigramsAuthors[a]
         probabilidade = 1;
 	count = getUniqueWords(unigramsCount)
-	value = calculateProbBi(words, bgramsCount, unigramsCount, "meter-aqui-o-metodo-que-se-quer-de-alisamento", count)
+	value = calculateProbBiLaplace(words, bigramsCount, unigramsCount, "meter-aqui-o-metodo-que-se-quer-de-alisamento", count)
         probs[a] = probabilidade
     return probs
    
-def calculateProbBi(words, bigramsCount, unigramsCount, flag, count):
+def calculateProbBiLaplace(words, bigramsCount, unigramsCount, flag, count):
         previousWord = "<s>" 
         for w in words:
 	    if previousWord in bgramsCount:
@@ -190,7 +190,6 @@ def calculateProbBi(words, bigramsCount, unigramsCount, flag, count):
 	return value
 		
 def guardamedia(p):
-   
     filename=str(inFile)+'-list.txt'
     f = open(filename, 'w')
     pickle.dump(p, f)
@@ -206,7 +205,7 @@ def media(p):
    
     return media
 
-def prob_frase(p):
+def probFrasePalavras(p):
     authorsList=getAuthors()
     probs = {}
     chosenOne = ' '
@@ -242,23 +241,20 @@ if flag == '-d':
 	bigrams(p)
 	unigrams(p)
 	guardamedia(p)
+
 elif flag == '-t':	
 	authorsList = getAuthors()
 	authorsBigrams = {}
 	authorsUnigrams = {}
+	method = sys.argv[3]
 	for author in authorsList:
 		authorsBigrams[author] = loadBigrams(author)
 		authorsUnigrams[author] = loadUnigrams(author)
+	if method == 'uni':
+		probUni(splitPhrases(inFile), authorsList, authorsUnigrams)		
 
-	prob_frase(splitPhrases("normalized-text1.txt"))
-	prob_frase(splitPhrases("normalized-text2.txt"))
-	prob_frase(splitPhrases("normalized-text3.txt"))
-	prob_frase(splitPhrases("normalized-text4.txt"))
-	prob_frase(splitPhrases("normalized-text5.txt"))
-	prob_frase(splitPhrases("normalized-text6.txt"))
+	elif method == 'bi':
+		probBi(splitPhrases(inFile), authorsList, authorsUnigrams, authorsBigrams)
 
-
-
-
-
-
+	elif method == 'medium':
+		probUni(splitPhrases(inFile), authorsList, authorsUnigrams)
