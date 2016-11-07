@@ -168,14 +168,14 @@ def phraseBigram(frase, authorsList, unigramsAuthors, bigramsAuthors):
     for a in authorsList:
         bgramsCount = bigramsAuthors[a]
 	unigramsCount = unigramsAuthors[a]
-        probabilidade = 1;
 	count = getUniqueWords(unigramsCount)
-	value = calculateProbBiLaplace(words, bigramsCount, unigramsCount, "meter-aqui-o-metodo-que-se-quer-de-alisamento", count)
+	probabilidade = calculateProbBiLaplace(words, bgramsCount, unigramsCount, "meter-aqui-o-metodo-que-se-quer-de-alisamento", count)
         probs[a] = probabilidade
     return probs
    
-def calculateProbBiLaplace(words, bigramsCount, unigramsCount, flag, count):
+def calculateProbBiLaplace(words, bgramsCount, unigramsCount, flag, count):
         previousWord = "<s>" 
+        probabilidade = 1;
         for w in words:
 	    if previousWord in bgramsCount:
 		if w in bgramsCount[previousWord]:
@@ -187,7 +187,7 @@ def calculateProbBiLaplace(words, bigramsCount, unigramsCount, flag, count):
 
             probabilidade = probabilidade * value
 	    previousWord = w
-	return value
+	return probabilidade
 		
 def guardamedia(p):
     filename=str(inFile)+'-list.txt'
@@ -205,8 +205,7 @@ def media(p):
    
     return media
 
-def probFrasePalavras(p):
-    authorsList=getAuthors()
+def probFrasePalavras(p, authorsList):
     probs = {}
     chosenOne = ' '
     maximum = sys.maxint - 1
@@ -257,4 +256,4 @@ elif flag == '-t':
 		probBi(splitPhrases(inFile), authorsList, authorsUnigrams, authorsBigrams)
 
 	elif method == 'medium':
-		probUni(splitPhrases(inFile), authorsList, authorsUnigrams)
+		probFrasePalavras(splitPhrases(inFile), authorsList)
