@@ -2,33 +2,98 @@ Relatorio MP2
  
 Pedro Ascensao 78961, Joao Rebelo 75376
  
-O Objectivo do projecto e extrair conhecimento de um corpus de textos de v?rios escritores.
- 
-A nossa solucao e composta essencialmente por dois scripts, o ficheiro run.sh e o ficheiro ngrams.py.
+O objectivo do projecto é extrair conhecimento de um corpus de textos de vários escritores, tal que, com esse conhecimento, seja possível identificar o autor de outro texto. A nossa solucao para este problema é composta essencialmente por dois scripts, o ficheiro run.sh e o ficheiro ngrams.py.
   
-Ao corrermos o script run, este come?ar? por normalizar todos os textos de treino de todos os autores, utilizando para isso o script normalize.sh (separa a pontua??o por um espa?o), posteriormente os textos normalizados s?o guardados na pasta target. De seguida ? percorrida uma lista dos autores dispon?veis para treino e para cada autor ? feita uma concatena??o de todos os textos desse autor com o objectivo de facilitar o c?lculo de bigramas e unigramas, e ? feita uma chamada ao script ngrams com a flag -d e o ficheiro obtido concatena??o,  este ficheiro ? guardado tamb?m na pasta target com o nome do autor correspondente.
+Ao corrermos o script run, este começa por normalizar todos os textos de treino de todos os autores, utilizando para isso o script normalize.sh que separa a pontuação por um espaço. Posteriormente os textos normalizados são guardados na pasta target. De seguida é percorrida uma lista dos autores disponíveis para treino e para cada autor é feita uma concatenação de todos os textos desse autor com o objectivo de facilitar o cálculo de bigramas e unigramas. A seguir, é feita uma chamada ao script ngrams com a flag -d e o ficheiro obtido concatenado,  que irá escrever num ficheiro a contagem dos unigramas e bigramas desse autor. Finalmente, o script irá, usando os 3 métodos, testar os ficheiros presentes em corpora/teste.
  
+Se corrermos o script run com a flag -t, este só irá fazer o último passo descrito em cima, ou seja, irá apenas testar os ficheiros de teste.
+
+O scrip ngrams pode ser chamado através das flags -d e -t. A flag -d é utilizada  para guardar-mos num ficheiro (que se encontra em target/(bigrams|unigrams)-$author) os unigramas e bigramas de um dado ficheiro de texto. A flag -t é utilizada para calcular a probabilidade de o ficheiro de input ser de um dado autor, utilizando para isso toda a informação recolhida através dos textos de treino. O método utilizado para calcular a probabilidade é dito ao script pelo uso duma flag (uni, bi, medium).
  
-O scrip ngrams pode ser chamado atrav?s das flags(-d e -t), a flag -d ? utilizada  para guardar-mos toda a informa??o necess?ria, come?amos por criar, para cada texto, uma lista com todas as suas frases, guardamos a lista num ficheiro e de seguida utilizamo-la  para calcular e guardar, em ficheiros txt, os n-gramas e b-gramas correspondentes a esse texto, usando para isso as fun??es unigrams e bigrams. A flag -t ? utilizada para calcular a probabilidade de cada texto pertencer aos autores, utilizando para isso toda a informa??o recolhida atrav?s dos textos de treino e essencialmente tr?s m?todos que diferem na informa??o cruzada entre o texto de teste e os textos de treino, correspondendo cada flag a um m?todo.
+Os três métodos utilizados são, unigramas sem alisamento (uni) , bigramas com alisamento de Laplace (bi) e a média do número de palavras por frase utilizada por cada autor.
+
+MÉTODO 1 - UNIGRAMAS SEM ALISAMENTO:
+No método dos unigramas sem alisamento, a probabilidade do texto é obtida através do somatório das probabilidades das frases (para evitar underflow). Por sua vez, a probabilidade duma frase é obtida através da multiplicação da probabilidade de cada palavra da frase. Finalmente, a probabilidade duma palavra é obtida pela fórmula: P(w) = C(w)/C(words), onde C(w) corresponde à contagem de quantas vezes apareceu nos ficheiros de treino a palavra w, para um certo autor, e C(words) é a contagem de todas as palavras que apareceram nos textos de treino desse autor.
+
+Esta probabilidade é calculada para cada autor, e no final, o autor com maior probabilidade é escolhido como autor do texto de teste.
  
+Resultados obtidos:
+500 Palavras:
+     --------------------------------------------------------------------------------------------------------------------------
+     |                         |    Texto 1    |    Texto 2    |    Texto 3    |    Texto 4    |   Texto 5    |    Texto 6    |
+     --------------------------------------------------------------------------------------------------------------------------
+     | Suposto autor do texto  |   Saramago    |  Almada Negr. |  Luísa Silva  |  Eça Queirós  | Camilo Branc.| José Rodrigue.|
+     --------------------------------------------------------------------------------------------------------------------------
+     | Escolhido pelo metodo   |   Saramago    |  Almada Negr. |  Luísa Silva  |  Luísa Silva  | Luísa Silva  |  Luísa Silva  |
+     --------------------------------------------------------------------------------------------------------------------------
+     
+1000 Palavras:
+     --------------------------------------------------------------------------------------------------------------------------
+     |                         |    Texto 1    |    Texto 2    |    Texto 3    |    Texto 4    |   Texto 5    |    Texto 6    |
+     --------------------------------------------------------------------------------------------------------------------------
+     | Suposto autor do texto  |   Saramago    |  Almada Negr. |  Luísa Silva  |  Eça Queirós  | Camilo Branc.| José Rodrigue.|
+     --------------------------------------------------------------------------------------------------------------------------
+     | Escolhido pelo metodo   |   Saramago    |  Luísa Silva  |  Luísa Silva  |  Luísa Silva  | Luísa Silva  |  Luísa Silva  |
+     --------------------------------------------------------------------------------------------------------------------------
+     
+Como se pode ver pela tabela, no total este método acertou 5 em 12 textos, ou seja aproximadamente 42%. Podemos ver ainda que nos ficheiros de 500 palavras acertou 50%, enquanto que em 1000 acertou em 33%. Outra observação que se pode fazer é que em 12 textos, o método escolheu 9 vezes (75%) a autora Luísa Marques Silva.
+
+Este método acabou por não resultar muito bem, como se pode ver, mas é possível na mesma tirar algumas conclusões. Como isto é sem alisamento, se uma palavra duma frase não existir dentro do vocabulário do autor a probabilidade desse frase é 0, ou seja supostamente, este método beneficiaria os autores que tem mais palavras no seu vocabulário, mas no entanto, a Luísa Marques Silva é uma das autoras que tem os textos mais pequenos e com menos palavras diferentes. A razão, na nossa opinião, que o algoritmo tenha escolhido tantas vezes a Luísa é porque, como ela tem um vocabulário reduzido e textos pequenos, se todas as palavras duma frase existirem no vocabulário dela, a probabilidade da frase será significativamente maior para ela porque a sua C(words) é bem menor.
+
+MÉTODO 2 -BIGRAMAS COM ALISAMENTO LAPLACE:
+No método dos bigrams com alisamento laplace, a probabilidade dum texto é calculado de forma semelhante ao método 1. A única diferença é que para calcular a probabilidade duma frase usa-se bigramas, sendo estes bigramas calculados por: P(w y) = C(w y) + 1/C(w) + V, onde C(w y) é a contagem de vezes que apareceu a sequência de palavras (w y), C(w) a contagem de vezes que apareceu a palavra w e V a contagem das palavras do vocabulário do autor.
  
-Os tr?s m?todos utilizados s?o, unigramas sem alisamento, bigramas com alisamento de Laplace e a m?dia do n?mero de palavras por frase utilizada por cada autor.
-O m?todo dos unigramas sem alisamento ? obtido atrav?s da fun??o probUni que tem como input uma lista, com as frases do texto de teste, que foi anteriormente criada a partir do m?todo splitPhrases("JoseSaramago.txt"), uma lista dos autores e um dicion?rio com os unigramas correspondentes. O probUni vai percorrer os unigramas guardados de cada autor e calcular a probabilidade de cada frase do texto de teste ocorrer no texto correspondente a esse unigrama, de seguida somamos  a probabilidade de todas as frase e devolvemos o autor com maior probabilidade (as probabilidades das frases s?o somadas e n?o multiplicadas porque este m?todo n?o usa alisamento), a probabilidade da frase ? calculada utilizando uma fun??o auxiliar (phraseUnigram), respons?vel por devolver um dicion?rio com os autores e respectivas probabilidades.
+Resultados obtidos:
+500 Palavras:
+     ---------------------------------------------------------------------------------------------------------------------------
+     |                         |    Texto 1    |    Texto 2    |    Texto 3    |    Texto 4    |    Texto 5    |    Texto 6    |
+     ---------------------------------------------------------------------------------------------------------------------------
+     | Suposto autor do texto  |   Saramago    |  Almada Negr. |  Luísa Silva  |  Eça Queirós  | Camilo Branc. | José Rodrigue.|
+     ---------------------------------------------------------------------------------------------------------------------------
+     | Escolhido pelo metodo   |  Almada Negr. |  Almada Negr. |  Almada Negr. |  Almada Negr. |  Almada Negr. |  Almada Negr. |
+     ---------------------------------------------------------------------------------------------------------------------------
+     
+1000 Palavras:
+     ---------------------------------------------------------------------------------------------------------------------------
+     |                         |    Texto 1    |    Texto 2    |    Texto 3    |    Texto 4    |    Texto 5    |    Texto 6    |
+     ---------------------------------------------------------------------------------------------------------------------------
+     | Suposto autor do texto  |   Saramago    |  Almada Negr. |  Luísa Silva  |  Eça Queirós  | Camilo Branc. | José Rodrigue.|
+     ---------------------------------------------------------------------------------------------------------------------------
+     | Escolhido pelo metodo   |  Almada Negr. |  Luísa Silva  |  Almada Negr. |  Almada Negr. |  Almada Negr. |  Almada Negr. |
+     ---------------------------------------------------------------------------------------------------------------------------
+     
+Como se pode ver pela tabela, no total este método acertou 1 em 12 textos, ou seja aproximadamente 8%. Podemos ver ainda que nos ficheiros de 500 palavras acertou 16%, enquanto que em 1000 acertou em 0%. Outra observação que se pode fazer é que em 12 textos, o método escolheu 11 vezes (92%) o autor Almada Negreiros.
+
+Surpreendentemente, este método resultou bem pior que o primeiro. Quando implementámos achámos que iria ser bem mais preciso, porque estava a usar bigramas e ainda por cima com alisamento, e por isso, quando vimos os resultados ficámos supreendidos. No entanto, nós achamos que sabemos o porquê dos resultados. Como o método utiliza alisamento laplace, os autores com menos textos e principalmente menos vocabulário, acabam por ter probabilidades muito maiores para os bigramas do que os autores que têm um vocabulário mais extenso. Nos nosso ficheiros de treino, o autor Almada Negreiros, é o autor com menos palavras no seu vocabulário, sendo bastante menor que os autores, por exemplo, Saramago ou José Rodrigues dos Santos. Como a probabilidade para cada frase é bem maior para o Alamada Negreiros, ele acaba por ter sempre a probabilidade maior para os textos.
  
+MÉTODO 3 - MÉDIA DO NÚMERO DE PALAVRAS POR FRASE:
+Neste método, calculámos a média de palavras por frase no texto de teste. Depois comparamos com as médias calculadas para cada autor usando os ficheiros de treino, e escolhemos o autor com a média mais próxima.
  
-O segundo m?todo que utilizamos, Bigramas com alisamento de Laplace, ? obtido a partir da fun??o probBi, que ? semelhan?a da probUni, recebe uma lista com as frases do texto, uma lista dos autores, um dicion?rio dos unigramas e um dos bigramas. Para cada frase do texto de teste, ? calculada a probabilidade para autor a utilizando a fun??o auxiliar phraseBigram, esta fun??o tal como a phraseUnigram, devolve um Dicion?rio com os autores e respectivas probabilidades, para este c?lculo ? utilizada uma terceira fun??o auxiliar, calculateProbBiLaplace, respons?vel por calcular, usando alisamento de Laplace, a probabilidade dessa frase ocorrer, usando para isso os bigramas de determinado autor.
+Resultados obtidos:
+500 Palavras:
+     ---------------------------------------------------------------------------------------------------------------------------
+     |                         |    Texto 1    |    Texto 2    |    Texto 3    |    Texto 4    |    Texto 5    |    Texto 6    |
+     ---------------------------------------------------------------------------------------------------------------------------
+     | Suposto autor do texto  |   Saramago    |  Almada Negr. |  Luísa Silva  |  Eça Queirós  | Camilo Branc. | José Rodrigue.|
+     ---------------------------------------------------------------------------------------------------------------------------
+     | Escolhido pelo metodo   |   Saramago    |  Eça Queirós  |  Luísa Silva  |   Saramago    |   Saramago    |  Eça Queirós  |
+     ---------------------------------------------------------------------------------------------------------------------------
+     
+1000 Palavras:
+     ---------------------------------------------------------------------------------------------------------------------------
+     |                         |    Texto 1    |    Texto 2    |    Texto 3    |    Texto 4    |    Texto 5    |    Texto 6    |
+     ---------------------------------------------------------------------------------------------------------------------------
+     | Suposto autor do texto  |   Saramago    |  Almada Negr. |  Luísa Silva  |  Eça Queirós  | Camilo Branc. | José Rodrigue.|
+     ---------------------------------------------------------------------------------------------------------------------------
+     | Escolhido pelo metodo   |   Saramago    |  Eça Queirós  |  Almada Negr. |  Eça Queirós  |   Saramago    |  Eça Queirós  |
+     ---------------------------------------------------------------------------------------------------------------------------
+     
+Como se pode ver pela tabela, no total este método acertou 4 em 12 textos, ou seja aproximadamente 33%. Podemos ver ainda que nos ficheiros de 500 palavras acertou 33%, enquanto que em 1000 acertou em 33%. Outra observação que se pode fazer é que em 12 textos, o método escolheu 10 vezes (83%) os autores Saramago e Eça de Queirós.
+
+Este método era uma experiência interessante que decidimos fazer. E achamos que este método era capaz de resultar melhor caso os ficheiros de testes fossem um texto completo do autor. Como os nossos ficheiros de testes, no máximo tem 1000 palavras que correspondem normalmente a 5/6 frases, a média de palavras por frase não estão muito correctas, sendo assim mais díficil de identificar o autor corretamente. No entanto, este método apesar de ser pior que o primeiro é consideravelmente melhor que o segundo.
+
+Conclusões:
  
+Os resultados obtidos não foram ao encontro dos esperados, dado que queríamos ter encontrado um método que no minimo identificasse corretamente 80% dos textos. O método mais eficiente com base nos resultados obtidos foi o primeiro método que acabou por ter uma taxa de sucesso próxima dos 50%
  
-Por fim o terceiro m?todo que utilizamos, corresponde ao n?mero de palavras por frase usado por cada autor, dado que temos os textos guardados em listas de frase este m?todo torna-se bastante eficiente. Este m?todo ? composto essencialmente por duas fun??es, a probFrasePalavra e uma auxiliar media, a primeira come?a por chamar a fun??o auxiliar para calcular o n?mero m?dio de palavras por frase do texto de teste, se seguida percorre os textos de treino de cada autor e calcula a mesma m?dia para cada um deles, por fim compara qual a m?dia que se aproxima mais da do teste e devolve o autor correspondente.
- 
- 
-Os resultados obtidos n?o foram ao encontro dos esperados. Relativamente ao primeiro m?todo utilizado, unigramas sem alisamento, conseguimos identificar tr?s dos seis autores, no segundo m?todo, bigramas com alisamento de Laplace, identificamos corretamente um autor e no terceiro m?todo, m?dia de palavras por frase, identificamos tr?s.
- 
- 
-    O m?todo mais eficiente com base nos resultados obtidos foi o primeiro m?todo, no entanto, concordamos que o segundo m?todo seria mais eficiente, caso os corpus de treino e teste fosses significativamente maiores.
- 
- 
-Durante a implementa??o test?mos outros m?todos, como o n?mero de pontua??o por texto, n?mero de elementos de pontua??o num texto sobre o n?mero total de palavras e posteriormente verificamos de que autor de aproximava mais o resultado obtido, obtemos 3 autores identificados corretamente, ainda assim o m?todo n?o era vi?vel pois dependia muito do tamanho dos textos, ? semelhan?a deste test?mos tamb?m para o n?mero de palavras come?adas por letra mai?scula, identificando dois autores e ainda a combina??o destes dois m?todos, atribuindo pesos a cada um, por fim testamos tamb?m com o n?mero de algarismos por texto identificando apenas um autor. Todos estes m?todos tornam-se ineficientes dada a dimens?o do corpus de teste.
- 
- 
-    Conclu?mos que necessitamos de um corpus de treino maiores para tornar os nossos m?todos mais eficientes. Os resultados obtidos n?o v?o ao encontro dos esperados por v?ria raz?es, no caso espec?fico do segundo m?todo conclu?mos que o alisamento de laplace tem algumas falhas dadas as diferentes dimens?es dos textos de treino dos autores, influ?ncia proporcionalmente as probabilidades usando este tipo de alisamento. Para al?m da diferen?a de dimens?es entre os textos, as dimens?es de cada texto tamb?m deveriam de ser maiores para optimizar os m?todos.
+Concluímos que necessitamos de um corpus de treino maiores para tornar os nossos métodos mais eficientes. Também ajudaria ter ficheiros de teste maiores com mais texto, dado que isso ajudaria a calcular de forma mais precisa os autores de cada texto.
