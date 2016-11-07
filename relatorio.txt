@@ -1,0 +1,34 @@
+Relatorio MP2
+ 
+Pedro Ascensao 78961, Joao Rebelo 75376
+ 
+O Objectivo do projecto e extrair conhecimento de um corpus de textos de v?rios escritores.
+ 
+A nossa solucao e composta essencialmente por dois scripts, o ficheiro run.sh e o ficheiro ngrams.py.
+  
+Ao corrermos o script run, este come?ar? por normalizar todos os textos de treino de todos os autores, utilizando para isso o script normalize.sh (separa a pontua??o por um espa?o), posteriormente os textos normalizados s?o guardados na pasta target. De seguida ? percorrida uma lista dos autores dispon?veis para treino e para cada autor ? feita uma concatena??o de todos os textos desse autor com o objectivo de facilitar o c?lculo de bigramas e unigramas, e ? feita uma chamada ao script ngrams com a flag -d e o ficheiro obtido concatena??o,  este ficheiro ? guardado tamb?m na pasta target com o nome do autor correspondente.
+ 
+ 
+O scrip ngrams pode ser chamado atrav?s das flags(-d e -t), a flag -d ? utilizada  para guardar-mos toda a informa??o necess?ria, come?amos por criar, para cada texto, uma lista com todas as suas frases, guardamos a lista num ficheiro e de seguida utilizamo-la  para calcular e guardar, em ficheiros txt, os n-gramas e b-gramas correspondentes a esse texto, usando para isso as fun??es unigrams e bigrams. A flag -t ? utilizada para calcular a probabilidade de cada texto pertencer aos autores, utilizando para isso toda a informa??o recolhida atrav?s dos textos de treino e essencialmente tr?s m?todos que diferem na informa??o cruzada entre o texto de teste e os textos de treino, correspondendo cada flag a um m?todo.
+ 
+ 
+Os tr?s m?todos utilizados s?o, unigramas sem alisamento, bigramas com alisamento de Laplace e a m?dia do n?mero de palavras por frase utilizada por cada autor.
+O m?todo dos unigramas sem alisamento ? obtido atrav?s da fun??o probUni que tem como input uma lista, com as frases do texto de teste, que foi anteriormente criada a partir do m?todo splitPhrases("JoseSaramago.txt"), uma lista dos autores e um dicion?rio com os unigramas correspondentes. O probUni vai percorrer os unigramas guardados de cada autor e calcular a probabilidade de cada frase do texto de teste ocorrer no texto correspondente a esse unigrama, de seguida somamos  a probabilidade de todas as frase e devolvemos o autor com maior probabilidade (as probabilidades das frases s?o somadas e n?o multiplicadas porque este m?todo n?o usa alisamento), a probabilidade da frase ? calculada utilizando uma fun??o auxiliar (phraseUnigram), respons?vel por devolver um dicion?rio com os autores e respectivas probabilidades.
+ 
+ 
+O segundo m?todo que utilizamos, Bigramas com alisamento de Laplace, ? obtido a partir da fun??o probBi, que ? semelhan?a da probUni, recebe uma lista com as frases do texto, uma lista dos autores, um dicion?rio dos unigramas e um dos bigramas. Para cada frase do texto de teste, ? calculada a probabilidade para autor a utilizando a fun??o auxiliar phraseBigram, esta fun??o tal como a phraseUnigram, devolve um Dicion?rio com os autores e respectivas probabilidades, para este c?lculo ? utilizada uma terceira fun??o auxiliar, calculateProbBiLaplace, respons?vel por calcular, usando alisamento de Laplace, a probabilidade dessa frase ocorrer, usando para isso os bigramas de determinado autor.
+ 
+ 
+Por fim o terceiro m?todo que utilizamos, corresponde ao n?mero de palavras por frase usado por cada autor, dado que temos os textos guardados em listas de frase este m?todo torna-se bastante eficiente. Este m?todo ? composto essencialmente por duas fun??es, a probFrasePalavra e uma auxiliar media, a primeira come?a por chamar a fun??o auxiliar para calcular o n?mero m?dio de palavras por frase do texto de teste, se seguida percorre os textos de treino de cada autor e calcula a mesma m?dia para cada um deles, por fim compara qual a m?dia que se aproxima mais da do teste e devolve o autor correspondente.
+ 
+ 
+Os resultados obtidos n?o foram ao encontro dos esperados. Relativamente ao primeiro m?todo utilizado, unigramas sem alisamento, conseguimos identificar tr?s dos seis autores, no segundo m?todo, bigramas com alisamento de Laplace, identificamos corretamente um autor e no terceiro m?todo, m?dia de palavras por frase, identificamos tr?s.
+ 
+ 
+    O m?todo mais eficiente com base nos resultados obtidos foi o primeiro m?todo, no entanto, concordamos que o segundo m?todo seria mais eficiente, caso os corpus de treino e teste fosses significativamente maiores.
+ 
+ 
+Durante a implementa??o test?mos outros m?todos, como o n?mero de pontua??o por texto, n?mero de elementos de pontua??o num texto sobre o n?mero total de palavras e posteriormente verificamos de que autor de aproximava mais o resultado obtido, obtemos 3 autores identificados corretamente, ainda assim o m?todo n?o era vi?vel pois dependia muito do tamanho dos textos, ? semelhan?a deste test?mos tamb?m para o n?mero de palavras come?adas por letra mai?scula, identificando dois autores e ainda a combina??o destes dois m?todos, atribuindo pesos a cada um, por fim testamos tamb?m com o n?mero de algarismos por texto identificando apenas um autor. Todos estes m?todos tornam-se ineficientes dada a dimens?o do corpus de teste.
+ 
+ 
+    Conclu?mos que necessitamos de um corpus de treino maiores para tornar os nossos m?todos mais eficientes. Os resultados obtidos n?o v?o ao encontro dos esperados por v?ria raz?es, no caso espec?fico do segundo m?todo conclu?mos que o alisamento de laplace tem algumas falhas dadas as diferentes dimens?es dos textos de treino dos autores, influ?ncia proporcionalmente as probabilidades usando este tipo de alisamento. Para al?m da diferen?a de dimens?es entre os textos, as dimens?es de cada texto tamb?m deveriam de ser maiores para optimizar os m?todos.
